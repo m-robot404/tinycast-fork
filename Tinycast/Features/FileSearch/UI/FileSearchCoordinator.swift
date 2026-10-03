@@ -7,6 +7,7 @@ final class FileSearchCoordinator {
     private let session: FileSearchSession
     private let palette: PaletteState
     private let paletteCoordinator: PaletteCoordinator
+    private let windowController: PaletteWindowController?
     private unowned let core: AppCore
 
     init(
@@ -19,6 +20,7 @@ final class FileSearchCoordinator {
         self.session = session
         self.palette = palette
         self.paletteCoordinator = paletteCoordinator
+        self.windowController = windowController
         self.core = core
     }
 
@@ -108,10 +110,31 @@ final class FileSearchCoordinator {
     }
 
     func copyFile(_ result: FileSearchResult) {
-        let pasteboard = NSPasteboard.general
-        pasteboard.clearContents()
-        pasteboard.writeObjects([result.url as NSURL])
+        PasteboardFiles.write(result.url, to: .general)
         core.showMessage("Copied file")
+    }
+
+    func pasteFile(_ result: FileSearchResult) {
+        let previous = paletteCoordinator.targetApp
+        paletteCoordinator.hidePalette(restoreFocus: false)
+        Paster.pasteFile(result.url, previousApp: previous)
+    }
+
+    func trash(_ result: FileSearchResult) {
+        Task {
+            do {
+                try await Task.detached(priority: .userInitiated) {
+                    try FileManager.default.trashItem(at: result.url, resultingItemURL: nil)
+                }.value
+                session.remove(result)
+                core.showMessage("Moved to Trash")
+            } catch {
+                await core.showNotice(
+                    title: "Couldn’t Move \(result.name) to Trash",
+                    message: error.localizedDescription,
+                    symbol: "trash", tone: .danger)
+            }
+        }
     }
 
     func copyName(_ result: FileSearchResult) {

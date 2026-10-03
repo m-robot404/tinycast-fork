@@ -5,6 +5,7 @@ import SwiftUI
 struct FileSearchList: View {
 
     @Environment(\.metrics) private var metrics
+    var title: String = "Results"
     let results: [FileSearchResult]
     let selectedID: FileSearchResult.ID?
     var showsInfoPanel = false
@@ -22,7 +23,7 @@ struct FileSearchList: View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(spacing: 0) {
-                    SectionHeader(title: "Results", isFirst: true)
+                    SectionHeader(title: title, isFirst: true)
                     ForEach(results) { result in
                         FileSearchRow(
                             result: result,

@@ -4,7 +4,7 @@ import Foundation
 @Observable
 final class FileSearchSession {
     typealias SearchOperation =
-        @Sendable (String, String, FileSearchPolicy) async throws -> [FileSearchResult]
+        @Sendable (String, FileSearchFilter, FileSearchPolicy) async throws -> [FileSearchResult]
 
     enum State: Equatable {
         case idle
@@ -19,7 +19,8 @@ final class FileSearchSession {
     var lastSelectedID: String?
     private(set) var lastQuery = ""
     private(set) var lastActiveAt: Date?
-    private var query = ""
+    /// The published search: the filter belongs to it, so narrowing re-runs the same words.
+    private var request: Request?
     private var revision = 0
     @ObservationIgnored private var pendingSearch: PendingSearch?
     @ObservationIgnored private var workerTask: Task<Void, Never>?
@@ -28,8 +29,13 @@ final class FileSearchSession {
     @ObservationIgnored private let debounce: Duration
     @ObservationIgnored private let searchOperation: SearchOperation
 
-    private struct PendingSearch {
+    private struct Request: Equatable {
         let query: String
+        let filter: FileSearchFilter
+    }
+
+    private struct PendingSearch {
+        let request: Request
         let revision: Int
         let earliestStart: ContinuousClock.Instant
     }
@@ -41,10 +47,9 @@ final class FileSearchSession {
             scopes: FileSearchScope.defaultScopes, ignorePatterns: [],
             homeDirectory: homeDirectory)
         debounce = .milliseconds(40)
-        searchOperation = { query, expression, policy in
+        searchOperation = { query, filter, policy in
             try await Task.detached(priority: .userInitiated) {
-                try FileSearchService.search(
-                    query: query, expression: expression, policy: policy)
+                try FileSearchService.search(query: query, policy: policy, filter: filter)
             }.value
         }
     }
@@ -73,22 +78,21 @@ final class FileSearchSession {
         reset()
     }
 
-    func search(_ rawQuery: String) {
+    /// An empty query is a request too: the blank screen lists what was used recently.
+    func search(_ rawQuery: String, filter: FileSearchFilter = .all) {
         let query = rawQuery.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !query.isEmpty else {
-            cancel()
-            return
-        }
+        let request = Request(query: query, filter: filter)
         lastActiveAt = Date()
-        if query != self.query { lastSelectedID = nil }
-        lastQuery = query
-        guard query != self.query || state == .failed else { return }
+        if request.query != self.request?.query { lastSelectedID = nil }
+        lastQuery = request.query
+        guard request != self.request || state == .failed else { return }
         revision &+= 1
-        self.query = query
+        self.request = request
         state = .searching
+        // No debounce on the blank screen: there is no next keystroke for it to coalesce with.
         pendingSearch = PendingSearch(
-            query: query, revision: revision,
-            earliestStart: ContinuousClock.now.advanced(by: debounce))
+            request: request, revision: revision,
+            earliestStart: ContinuousClock.now.advanced(by: query.isEmpty ? .zero : debounce))
         guard workerTask == nil else { return }
         workerTask = Task { [weak self] in
             guard let self else { return }
@@ -107,7 +111,7 @@ final class FileSearchSession {
 
     func cancel() {
         cancelActiveSearch()
-        query = ""
+        request = nil
         results = []
         state = .idle
     }
@@ -123,39 +127,25 @@ final class FileSearchSession {
         showsInfoPanel.toggle()
     }
 
-    private func runWorker() async {
-        while let request = pendingSearch {
-            let delay = ContinuousClock.now.duration(to: request.earliestStart)
-            if delay > .zero { try? await Task.sleep(for: delay) }
-            guard pendingSearch?.revision == request.revision else { continue }
-            pendingSearch = nil
-            guard
-                let nameExpression = FileSearchQuery.filenameExpression(
-                    for: request.query, excluding: policy.ignore.spotlightNameExclusions)
-            else { continue }
-            do {
-                let nameCandidates = try await searchOperation(request.query, nameExpression, policy)
-                guard revision == request.revision, query == request.query else { continue }
-                results = nameCandidates
-                state = .ready
+    /// A trashed row names a file that is gone, so it leaves the published results with it.
+    func remove(_ result: FileSearchResult) {
+        results.removeAll { $0.id == result.id }
+    }
 
-                if policy.includeContent,
-                    pendingSearch == nil,
-                    let contentExpression = FileSearchQuery.contentExpression(
-                        for: request.query, excluding: policy.ignore.spotlightNameExclusions)
-                {
-                    let contentCandidates = try await searchOperation(request.query, contentExpression, policy)
-                    guard revision == request.revision, query == request.query else { continue }
-                    var seen = Set(nameCandidates.map(\.id))
-                    var merged = nameCandidates
-                    for candidate in contentCandidates where seen.insert(candidate.id).inserted {
-                        merged.append(candidate)
-                    }
-                    results = FileSearchQuery.rank(
-                        merged, for: request.query, ignoring: policy.ignore, limit: policy.resultLimit)
-                }
+    private func runWorker() async {
+        while let pending = pendingSearch {
+            let delay = ContinuousClock.now.duration(to: pending.earliestStart)
+            if delay > .zero { try? await Task.sleep(for: delay) }
+            guard pendingSearch?.revision == pending.revision else { continue }
+            pendingSearch = nil
+            let req = pending.request
+            do {
+                let candidates = try await searchOperation(req.query, req.filter, policy)
+                guard revision == pending.revision, self.request == req else { continue }
+                results = candidates
+                state = .ready
             } catch {
-                guard revision == request.revision, query == request.query else { continue }
+                guard revision == pending.revision, self.request == req else { continue }
                 results = []
                 state = .failed
             }

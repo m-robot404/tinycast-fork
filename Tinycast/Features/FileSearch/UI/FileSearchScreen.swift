@@ -10,6 +10,10 @@ struct FileSearchScreen: PaletteScreen {
 
     var rows: [FileSearchResult] { session.results }
 
+    private var isShowingRecents: Bool {
+        vm.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
     var primaryActionTitle: String {
         guard let result = result(at: vm.selection) else { return "Open File" }
         return result.isDirectory ? "Open Folder" : "Open File"
@@ -21,7 +25,7 @@ struct FileSearchScreen: PaletteScreen {
 
     func actions(at selection: Int) -> PopoverMenuContent? {
         guard let result = result(at: selection) else { return nil }
-        return FileSearchActionsMenu.content(result: result, core: core, session: session)
+        return FileSearchActionsMenu.content(result: result, core: core, session: session, vm: vm)
     }
 
     func activate(at selection: Int) {
@@ -49,6 +53,14 @@ struct FileSearchScreen: PaletteScreen {
             guard let result = result(at: selection) else { return false }
             core.fileSearchCoordinator.copyPath(result)
             return true
+        case .pasteFile:
+            guard let result = result(at: selection) else { return false }
+            core.fileSearchCoordinator.pasteFile(result)
+            return true
+        case .delete:
+            guard let result = result(at: selection) else { return false }
+            core.fileSearchCoordinator.trash(result)
+            return true
         case .quickLook:
             guard let result = result(at: selection) else { return false }
             core.fileSearchCoordinator.quickLook(result)
@@ -75,19 +87,17 @@ struct FileSearchScreen: PaletteScreen {
 
     @ViewBuilder
     private func content(selection: Int, scroll: ScrollIntent) -> some View {
-        let query = vm.query.trimmingCharacters(in: .whitespacesAndNewlines)
-        if query.isEmpty {
-            EmptyResults(text: "Type to search files and folders")
-        } else if session.state == .failed {
+        if session.state == .failed {
             EmptyResults(text: "File search is unavailable")
         } else if rows.isEmpty {
-            EmptyResults(text: session.state == .ready ? "No files found" : "Searching files…")
+            emptyState
         } else {
             let selected = result(at: selection)
             Group {
                 if session.showsInfoPanel {
                     HStack(spacing: 0) {
                         FileSearchList(
+                            title: isShowingRecents ? "Recently Used" : "Results",
                             results: rows,
                             selectedID: selected?.id,
                             showsInfoPanel: true,
@@ -112,6 +122,7 @@ struct FileSearchScreen: PaletteScreen {
                     }
                 } else {
                     FileSearchList(
+                        title: isShowingRecents ? "Recently Used" : "Results",
                         results: rows,
                         selectedID: selected?.id,
                         showsInfoPanel: false,
@@ -144,6 +155,17 @@ struct FileSearchScreen: PaletteScreen {
         }
     }
 
+    @ViewBuilder
+    private var emptyState: some View {
+        if session.state != .ready {
+            Color.clear
+        } else if isShowingRecents {
+            EmptyResults(text: "Type to search files and folders")
+        } else {
+            EmptyResults(text: vm.fileSearchFilter.emptyMessage)
+        }
+    }
+
     private func restoreSelectionIfNeeded() {
         guard let lastID = session.lastSelectedID,
             let targetIndex = rows.firstIndex(where: { $0.id == lastID }),
@@ -157,7 +179,7 @@ struct FileSearchScreen: PaletteScreen {
 @MainActor
 enum FileSearchActionsMenu {
     static func content(
-        result: FileSearchResult, core: AppCore, session: FileSearchSession
+        result: FileSearchResult, core: AppCore, session: FileSearchSession, vm: PaletteState
     ) -> PopoverMenuContent {
         var items: [PopoverMenuItem] = []
 
@@ -208,6 +230,23 @@ enum FileSearchActionsMenu {
             )
             startedCopySection = true
         }
+        if let target = vm.pasteTarget {
+            items.append(
+                PopoverMenuItem(
+                    title: "Paste File to \(target.name)", icon: .paste(target, fallback: "doc.on.clipboard"),
+                    shortcut: "⇧⌘V"
+                ) { core.fileSearchCoordinator.pasteFile(result) }
+            )
+            startedCopySection = true
+        } else {
+            items.append(
+                PopoverMenuItem(
+                    title: "Paste File", systemImage: "doc.on.clipboard",
+                    shortcut: "⇧⌘V"
+                ) { core.fileSearchCoordinator.pasteFile(result) }
+            )
+            startedCopySection = true
+        }
         if core.settings.isFileSearchActionVisible(.copyName) {
             items.append(
                 PopoverMenuItem(
@@ -221,10 +260,16 @@ enum FileSearchActionsMenu {
             items.append(
                 PopoverMenuItem(
                     title: "Copy Path", systemImage: "doc.on.clipboard",
-                    startsSection: !startedCopySection && !items.isEmpty
+                    startsSection: !startedCopySection && !items.isEmpty, shortcut: "⌃⌘C"
                 ) { core.fileSearchCoordinator.copyPath(result) }
             )
         }
+        items.append(
+            PopoverMenuItem(
+                title: "Move to Trash", systemImage: "trash", startsSection: true,
+                shortcut: "⌃X", isDestructive: true
+            ) { core.fileSearchCoordinator.trash(result) }
+        )
         if core.settings.isFileSearchActionVisible(.saveAsQuicklink) {
             items.append(
                 PopoverMenuItem(

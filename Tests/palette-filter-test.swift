@@ -30,6 +30,12 @@ struct PaletteFilterTests {
             resolve(mode: .clipboard), .clipboardFilter,
             "the clipboard's type filter is what ⌘P has always opened")
         expect(
+            resolve(mode: .fileSearch), .fileSearchFilter,
+            "file search has a header filter of its own")
+        expect(
+            resolve(mode: .fileSearch, accessory: true), .fileSearchFilter,
+            "off an extension screen the flag cannot reach file search's own filter either")
+        expect(
             resolve(mode: .emoji), .emojiCategory,
             "the emoji picker exposes its category selector through ⌘P")
         expect(
@@ -53,7 +59,7 @@ struct PaletteFilterTests {
 
         // Every other mode was untouched by ⌘P before and has to stay that way.
         for mode in [
-            PaletteMode.launcher, .fileSearch, .aiHistory, .calculatorHistory,
+            PaletteMode.launcher, .aiHistory, .calculatorHistory,
             .quicklinks, .snippets, .schedule, .uninstall
         ] {
             expect(
