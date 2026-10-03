@@ -110,7 +110,7 @@ pings `@everyone`.
 ### Homebrew tap automation
 
 Each job's final step rewrites the `version` + `sha256` of its cask (`tinycast`, `tinycast@beta` or
-`tinycast-universal`) in the [`homebrew-tinycast`](https://github.com/abue-ammar/homebrew-tinycast) tap
+`tinycast-universal`) in the [`homebrew-tinycast`](https://github.com/subhashhhhhh/homebrew-tinycast) tap
 and pushes. It needs a `HOMEBREW_TAP_TOKEN` repo secret — a fine-grained PAT with **Contents:
 read/write** on the tap repo. Without the secret the step logs a warning and skips; the release still
 publishes. The `sed` is anchored to `^  version` / `^  sha256`, so a cask's two-space indent on those
