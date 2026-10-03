@@ -149,8 +149,8 @@ private struct AboutLink: Identifiable {
             url: URL(string: "https://tinycast.dev/")!),
         AboutLink(
             id: "github", glyph: .brand("BrandGitHub"), title: "GitHub",
-            detail: "github.com/subhashhhhhh/tinycast",
-            url: URL(string: "https://github.com/subhashhhhhh/tinycast")!),
+            detail: "github.com/subhashhhhhh/tinycast-fork",
+            url: URL(string: "https://github.com/subhashhhhhh/tinycast-fork")!),
         AboutLink(
             id: "discord", glyph: .brand("BrandDiscord"), title: "Discord",
             detail: "Join the Tinycast community",
