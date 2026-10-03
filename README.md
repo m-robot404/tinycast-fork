@@ -4,9 +4,9 @@
 RAM.**
 
 <p align="center">
-  <a href="https://github.com/abue-ammar/tinycast/releases/latest">
+  <a href="https://github.com/subhashhhhhh/tinycast-fork/releases/latest">
     <img alt="Latest release"
-         src="https://img.shields.io/github/v/release/abue-ammar/tinycast?sort=semver&style=flat&label=release&color=1F6FEB"></a>
+         src="https://img.shields.io/github/v/release/subhashhhhhh/tinycast-fork?sort=semver&style=flat&label=release&color=1F6FEB"></a>
   <img alt="Swift 6.0"
        src="https://img.shields.io/badge/Swift-6.0-F05138?style=flat&logo=swift&logoColor=white">
   <img alt="macOS 26 or later"
@@ -79,29 +79,22 @@ keep it actively maintained. GitHub Sponsors isn't available in my country, so p
 
 ## Install
 
-First, add the tap:
+Install via Homebrew:
 
 ```sh
-brew trust --tap abue-ammar/tinycast   # required for third-party taps
-brew tap abue-ammar/tinycast
+brew tap subhashhhhhh/tinycast
+brew install --cask tinycast
 ```
 
-Then run the one line that matches your Mac:
+Or install in one command:
 
-| Your Mac                         | Install                                  |
-| -------------------------------- | ---------------------------------------- |
-| Apple silicon, macOS 26 or newer | `brew install --cask tinycast`           |
-| Intel, macOS 26                  | `brew install --cask tinycast-universal` |
+```sh
+brew install --cask subhashhhhhh/tinycast/tinycast
+```
 
-Not sure which you have? **Apple menu → About This Mac.** Homebrew checks too, and refuses the
-wrong one.
+Homebrew clears the macOS quarantine flag automatically on every install and update (`postflight`), so there is nothing else to run.
 
-Want early builds? `brew install --cask tinycast@beta` puts `Tinycast Beta.app` beside the stable
-app, with its own settings and permissions. Apple silicon, macOS 26+.
-
-Homebrew clears the macOS quarantine flag on every install and update, so there is nothing else to
-run. Downloading a DMG from [Releases](https://github.com/abue-ammar/tinycast/releases) instead?
-Tinycast is self-signed, so clear the flag once:
+Downloading a DMG from [Releases](https://github.com/subhashhhhhh/tinycast-fork/releases) instead? Tinycast is self-signed, so clear the flag once:
 `xattr -dr com.apple.quarantine "/Applications/Tinycast.app"`.
 
 ## Permissions
