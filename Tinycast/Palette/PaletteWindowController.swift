@@ -1,5 +1,6 @@
 import AppKit
 import Carbon.HIToolbox
+import Darwin
 import SwiftUI
 
 @MainActor
@@ -43,6 +44,16 @@ final class PaletteWindowController: NSObject, NSWindowDelegate {
 
     init(core: AppCore) {
         self.core = core
+        super.init()
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(handleApplicationDidResignActive),
+            name: NSApplication.didResignActiveNotification, object: nil)
+    }
+
+    @objc private func handleApplicationDidResignActive() {
+        guard isVisible, !core.isShowingDialog else { return }
+        FileQuickLookController.shared.close()
+        core.paletteCoordinator.hidePalette(restoreFocus: false)
     }
 
     var isVisible: Bool { panel?.isVisible ?? false }
@@ -166,6 +177,7 @@ final class PaletteWindowController: NSObject, NSWindowDelegate {
         ImageThumbnail.purgePreviews()
         FilePreviewThumbnail.purgePreviews()
         IconCache.purgeFitted()
+        malloc_zone_pressure_relief(nil, 0)
         schedulePopToRoot()
         guard restoreFocus else { return }
         // Our own window first: it is still open, and activating another app would bury it.
@@ -236,6 +248,7 @@ final class PaletteWindowController: NSObject, NSWindowDelegate {
     func windowDidResignKey(_ notification: Notification) {
         guard isVisible, !core.isShowingDialog else { return }
         if core.palette.menuOpen { return }
+        if FileQuickLookController.shared.isVisible { return }
         // A file panel sets its own level under ours, so sink rather than dismiss.
         if NSApp.modalWindow != nil {
             panel?.level = .normal
@@ -397,12 +410,6 @@ final class PaletteWindowController: NSObject, NSWindowDelegate {
             return true
         }
         installPasteMonitor()
-        // Handled at the panel: a focused preview answers Escape before the palette's own handler.
-        panel.onEscape = { [weak self] in
-            guard let self, core.palette.fileSearchQuickLook else { return false }
-            core.palette.fileSearchQuickLook = false
-            return true
-        }
         // Handled at the panel: the field editor or a missing main menu eats these first.
         panel.onCommandShortcut = { [weak self] event in
             guard let self else { return false }

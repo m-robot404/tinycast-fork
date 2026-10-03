@@ -289,6 +289,17 @@ final class AppSettings {
         palettePositions[display] = [offset.x, offset.y]
     }
 
+    /// User's preferred default currency for automatic calculator conversions; nil means system region.
+    var defaultCurrency: String? {
+        didSet {
+            guard let defaultCurrency else {
+                defaults.removeObject(forKey: Key.defaultCurrency.rawValue)
+                return
+            }
+            defaults.set(defaultCurrency, forKey: Key.defaultCurrency.rawValue)
+        }
+    }
+
     // Feature switches, off out of the box, and off means fully off.
     var fileSearchEnabled: Bool {
         didSet { defaults.set(fileSearchEnabled, forKey: Key.fileSearchEnabled.rawValue) }
@@ -297,6 +308,59 @@ final class AppSettings {
     /// Tilde-abbreviated, so a backup taken on one machine still points somewhere on another.
     var fileSearchScopes: [String] {
         didSet { defaults.set(fileSearchScopes, forKey: Key.fileSearchScopes.rawValue) }
+    }
+
+    var fileSearchPreviewSize: FileSearchPreviewSize {
+        didSet {
+            defaults.set(fileSearchPreviewSize.rawValue, forKey: Key.fileSearchPreviewSize.rawValue)
+        }
+    }
+
+    var fileSearchShowsInfoPanel: Bool {
+        didSet {
+            defaults.set(
+                fileSearchShowsInfoPanel, forKey: Key.fileSearchShowsInfoPanel.rawValue)
+        }
+    }
+
+    var fileSearchIncludeContent: Bool {
+        didSet {
+            defaults.set(
+                fileSearchIncludeContent, forKey: Key.fileSearchIncludeContent.rawValue)
+        }
+    }
+
+    var fileSearchResultLimit: FileSearchResultLimit {
+        didSet {
+            defaults.set(
+                fileSearchResultLimit.rawValue, forKey: Key.fileSearchResultLimit.rawValue)
+        }
+    }
+
+    var fileSearchDisabledActions: [String] {
+        didSet {
+            defaults.set(
+                fileSearchDisabledActions, forKey: Key.fileSearchDisabledActions.rawValue)
+        }
+    }
+
+    var fileSearchResetTimeout: FileSearchResetTimeout {
+        didSet {
+            defaults.set(
+                fileSearchResetTimeout.rawValue, forKey: Key.fileSearchResetTimeout.rawValue)
+        }
+    }
+
+    func isFileSearchActionVisible(_ action: FileSearchActionOption) -> Bool {
+        !fileSearchDisabledActions.contains(action.rawValue)
+    }
+
+    func setFileSearchAction(_ action: FileSearchActionOption, visible: Bool) {
+        if visible {
+            fileSearchDisabledActions.removeAll { $0 == action.rawValue }
+        } else if !fileSearchDisabledActions.contains(action.rawValue) {
+            fileSearchDisabledActions.append(action.rawValue)
+        }
     }
 
     /// Only what the user added; the shipped rules are compiled into `FileSearchIgnoreList`.
@@ -642,6 +706,7 @@ final class AppSettings {
             defaults.object(forKey: Key.openOnCursorScreen.rawValue) == nil
             || defaults.bool(forKey: Key.openOnCursorScreen.rawValue)
         autoSwitchInputSourceID = defaults.string(forKey: Key.autoSwitchInputSource.rawValue)
+        defaultCurrency = defaults.string(forKey: Key.defaultCurrency.rawValue)
         paletteDraggable = defaults.bool(forKey: Key.paletteDraggable.rawValue)
         palettePositions =
             defaults.dictionary(forKey: Key.palettePosition.rawValue)
@@ -655,6 +720,24 @@ final class AppSettings {
             ?? FileSearchScope.defaultScopes
         fileSearchIgnorePatterns =
             defaults.stringArray(forKey: Key.fileSearchIgnorePatterns.rawValue) ?? []
+        fileSearchPreviewSize =
+            defaults.string(forKey: Key.fileSearchPreviewSize.rawValue)
+            .flatMap(FileSearchPreviewSize.init) ?? .medium
+        fileSearchShowsInfoPanel =
+            defaults.object(forKey: Key.fileSearchShowsInfoPanel.rawValue) == nil
+            || defaults.bool(forKey: Key.fileSearchShowsInfoPanel.rawValue)
+        fileSearchIncludeContent =
+            defaults.bool(forKey: Key.fileSearchIncludeContent.rawValue)
+        fileSearchResultLimit =
+            defaults.object(forKey: Key.fileSearchResultLimit.rawValue)
+            .flatMap { $0 as? Int }
+            .flatMap(FileSearchResultLimit.init(rawValue:)) ?? .twoHundred
+        fileSearchDisabledActions =
+            defaults.stringArray(forKey: Key.fileSearchDisabledActions.rawValue) ?? []
+        fileSearchResetTimeout =
+            defaults.object(forKey: Key.fileSearchResetTimeout.rawValue)
+            .flatMap { $0 as? Int }
+            .flatMap(FileSearchResetTimeout.init(rawValue:)) ?? .afterThreeMinutes
         notesEnabled = defaults.bool(forKey: Key.notesEnabled.rawValue)
         notesRendersMarkdown =
             defaults.object(forKey: Key.notesRendersMarkdown.rawValue) == nil

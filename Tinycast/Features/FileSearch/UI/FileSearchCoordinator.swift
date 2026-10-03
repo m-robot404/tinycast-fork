@@ -7,21 +7,18 @@ final class FileSearchCoordinator {
     private let session: FileSearchSession
     private let palette: PaletteState
     private let paletteCoordinator: PaletteCoordinator
-    private let windowController: PaletteWindowController
-    private var sharePicker: NSSharingServicePicker?
     private unowned let core: AppCore
 
     init(
         settings: AppSettings, appIndex: AppIndex, session: FileSearchSession,
         palette: PaletteState, paletteCoordinator: PaletteCoordinator,
-        windowController: PaletteWindowController, core: AppCore
+        windowController: PaletteWindowController? = nil, core: AppCore
     ) {
         self.settings = settings
         self.appIndex = appIndex
         self.session = session
         self.palette = palette
         self.paletteCoordinator = paletteCoordinator
-        self.windowController = windowController
         self.core = core
     }
 
@@ -34,16 +31,40 @@ final class FileSearchCoordinator {
 
     func applyPolicy() {
         session.apply(
-            scopes: settings.fileSearchScopes, ignorePatterns: settings.fileSearchIgnorePatterns)
+            scopes: settings.fileSearchScopes,
+            ignorePatterns: settings.fileSearchIgnorePatterns,
+            includeContent: settings.fileSearchIncludeContent,
+            resultLimit: settings.fileSearchResultLimit.rawValue)
     }
 
     /// `query` is the fallback row's: the screen opens already narrowed to what was typed.
     func show(query: String = "") {
         guard settings.fileSearchEnabled else { return }
-        paletteCoordinator.togglePalette(mode: .fileSearch, seeding: query.isEmpty ? nil : query)
+        let seedQuery: String?
+        if !query.isEmpty {
+            seedQuery = query
+        } else if let lastActive = session.lastActiveAt,
+            Date().timeIntervalSince(lastActive) < settings.fileSearchResetTimeout.interval,
+            !session.lastQuery.isEmpty
+        {
+            seedQuery = session.lastQuery
+        } else {
+            seedQuery = nil
+        }
+        paletteCoordinator.togglePalette(mode: .fileSearch, seeding: seedQuery)
+    }
+
+    func toggleInfoPanel() {
+        session.toggleInfoPanel()
+    }
+
+    func fileDropped() {
+        closeQuickLook()
+        paletteCoordinator.hidePalette(restoreFocus: false)
     }
 
     func open(_ result: FileSearchResult) {
+        closeQuickLook()
         paletteCoordinator.hidePalette(restoreFocus: false)
         Task {
             do {
@@ -59,26 +80,38 @@ final class FileSearchCoordinator {
     }
 
     func showInFinder(_ result: FileSearchResult) {
+        closeQuickLook()
         paletteCoordinator.hidePalette(restoreFocus: false)
         AppLauncher.showInFinder(result.url)
     }
 
-    /// macOS's own share sheet, anchored to the palette's trailing edge so the row stays beside it.
-    func share(_ result: FileSearchResult) {
-        guard let provider = NSItemProvider(contentsOf: result.url),
-            let anchor = paletteCoordinator.anchorView
-        else { return }
-        let picker = NSSharingServicePicker(items: [provider])
-        sharePicker = picker
-        picker.show(
-            relativeTo: CGRect(
-                x: anchor.bounds.maxX, y: anchor.bounds.midY, width: 0, height: 0),
-            of: anchor, preferredEdge: .maxX)
+    func quickLook(_ result: FileSearchResult) {
+        FileQuickLookController.shared.toggle(url: result.url)
     }
 
-    func copyPath(_ result: FileSearchResult) {
-        Paster.copyPlainText(result.id)
-        core.showMessage("Copied path")
+    func updateQuickLookIfVisible(_ result: FileSearchResult?) {
+        guard let result else { return }
+        FileQuickLookController.shared.updateIfVisible(url: result.url)
+    }
+
+    func closeQuickLook() {
+        FileQuickLookController.shared.close()
+    }
+
+    func showInfoInFinder(_ result: FileSearchResult) {
+        let path = result.url.path.replacingOccurrences(of: "\"", with: "\\\"")
+        let script = "tell application \"Finder\" to open information window of (POSIX file \"\(path)\" as alias)"
+        Task.detached {
+            var error: NSDictionary?
+            NSAppleScript(source: script)?.executeAndReturnError(&error)
+        }
+    }
+
+    func copyFile(_ result: FileSearchResult) {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.writeObjects([result.url as NSURL])
+        core.showMessage("Copied file")
     }
 
     func copyName(_ result: FileSearchResult) {
@@ -86,33 +119,14 @@ final class FileSearchCoordinator {
         core.showMessage("Copied name")
     }
 
-    /// The file itself rather than its path, so Finder and Mail paste a copy of it.
-    func copyFile(_ result: FileSearchResult) {
-        PasteboardFiles.write(result.url, to: .general)
-        core.showMessage("Copied file")
+    func copyPath(_ result: FileSearchResult) {
+        Paster.copyPlainText(result.id)
+        core.showMessage("Copied path")
     }
 
-    /// Into whichever app the palette was summoned over, which is what the row's title names.
-    func pasteFile(_ result: FileSearchResult) {
-        let previous = windowController.previousApp
+    func saveAsQuicklink(_ result: FileSearchResult) {
         paletteCoordinator.hidePalette(restoreFocus: false)
-        Paster.pasteFile(result.url, previousApp: previous)
-    }
-
-    func trash(_ result: FileSearchResult) {
-        Task {
-            do {
-                try await Task.detached(priority: .userInitiated) {
-                    try FileManager.default.trashItem(at: result.url, resultingItemURL: nil)
-                }.value
-                session.remove(result)
-                core.showMessage("Moved to Trash")
-            } catch {
-                await core.showNotice(
-                    title: "Couldn’t Move \(result.name) to Trash",
-                    message: error.localizedDescription,
-                    symbol: "trash", tone: .danger)
-            }
-        }
+        core.quicklinkCoordinator.editQuicklink(
+            Quicklink(name: result.name, link: result.url.absoluteString))
     }
 }

@@ -44,9 +44,16 @@ struct SettingsBackup: Codable {
         var openOnCursorScreen: Bool?
         // Safe to carry: it grants no permission class, just repositions the window.
         var paletteDraggable: Bool?
+        var defaultCurrency: String?
         var fileSearchEnabled: Bool?
         var fileSearchScopes: [String]?
         var fileSearchIgnorePatterns: [String]?
+        var fileSearchPreviewSize: String?
+        var fileSearchShowsInfoPanel: Bool?
+        var fileSearchIncludeContent: Bool?
+        var fileSearchResultLimit: Int?
+        var fileSearchDisabledActions: [String]?
+        var fileSearchResetTimeout: Int?
         var notesEnabled: Bool?
         var notesRendersMarkdown: Bool?
         var notesShowsFormattingBar: Bool?
@@ -153,9 +160,16 @@ extension SettingsBackup {
             rootSearchSensitivity: s.rootSearchSensitivity.rawValue,
             openOnCursorScreen: s.openOnCursorScreen,
             paletteDraggable: s.paletteDraggable,
+            defaultCurrency: s.defaultCurrency,
             fileSearchEnabled: s.fileSearchEnabled,
             fileSearchScopes: s.fileSearchScopes,
             fileSearchIgnorePatterns: s.fileSearchIgnorePatterns,
+            fileSearchPreviewSize: s.fileSearchPreviewSize.rawValue,
+            fileSearchShowsInfoPanel: s.fileSearchShowsInfoPanel,
+            fileSearchIncludeContent: s.fileSearchIncludeContent,
+            fileSearchResultLimit: s.fileSearchResultLimit.rawValue,
+            fileSearchDisabledActions: s.fileSearchDisabledActions,
+            fileSearchResetTimeout: s.fileSearchResetTimeout.rawValue,
             notesEnabled: s.notesEnabled,
             notesRendersMarkdown: s.notesRendersMarkdown,
             notesShowsFormattingBar: s.notesShowsFormattingBar,
@@ -389,6 +403,10 @@ extension SettingsBackup {
             settings.paletteDraggable = flag
             count += 1
         }
+        if let currency = s.defaultCurrency {
+            settings.defaultCurrency = currency
+            count += 1
+        }
         // Writing through AppSettings is enough; AppCore's sinks re-project the rest.
         if let flag = s.fileSearchEnabled {
             settings.fileSearchEnabled = flag
@@ -400,6 +418,30 @@ extension SettingsBackup {
         }
         if let patterns = s.fileSearchIgnorePatterns {
             settings.fileSearchIgnorePatterns = patterns
+            count += 1
+        }
+        if let raw = s.fileSearchPreviewSize, let size = FileSearchPreviewSize(rawValue: raw) {
+            settings.fileSearchPreviewSize = size
+            count += 1
+        }
+        if let flag = s.fileSearchShowsInfoPanel {
+            settings.fileSearchShowsInfoPanel = flag
+            count += 1
+        }
+        if let flag = s.fileSearchIncludeContent {
+            settings.fileSearchIncludeContent = flag
+            count += 1
+        }
+        if let raw = s.fileSearchResultLimit, let limit = FileSearchResultLimit(rawValue: raw) {
+            settings.fileSearchResultLimit = limit
+            count += 1
+        }
+        if let actions = s.fileSearchDisabledActions {
+            settings.fileSearchDisabledActions = actions
+            count += 1
+        }
+        if let raw = s.fileSearchResetTimeout, let timeout = FileSearchResetTimeout(rawValue: raw) {
+            settings.fileSearchResetTimeout = timeout
             count += 1
         }
         if let flag = s.notesEnabled {

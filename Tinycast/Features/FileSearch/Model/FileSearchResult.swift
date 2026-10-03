@@ -5,19 +5,16 @@ struct FileSearchResult: Identifiable, Equatable, Sendable {
     let url: URL
     let name: String
     let parentPath: String
-    /// The enclosing folder's own name, which is what tells two same-named folders apart.
-    let parentName: String
     let isDirectory: Bool
 
     init(url: URL, isDirectory: Bool, homeDirectory: URL) {
         let url = url.standardizedFileURL
-        let parent = url.deletingLastPathComponent()
         self.id = url.path
         self.url = url
         self.name = url.lastPathComponent
         self.parentPath = Self.abbreviate(
-            parent.path, homePath: homeDirectory.standardizedFileURL.path)
-        self.parentName = parent.lastPathComponent
+            url.deletingLastPathComponent().path,
+            homePath: homeDirectory.standardizedFileURL.path)
         self.isDirectory = isDirectory
     }
 

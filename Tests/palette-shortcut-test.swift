@@ -64,6 +64,8 @@ struct PaletteShortcutTests {
         expect(resolve("o", command: true, shift: true), nil, "⇧⌘O is not the open chord")
         expect(resolve("i", command: true), .showDetails, "⌘I shows the row's details")
         expect(resolve("i", command: true, shift: true), nil, "⇧⌘I is not the details chord")
+        expect(resolve("i", command: true, option: true), .showInfoInFinder, "⌥⌘I shows info in Finder")
+        expect(resolve("s", command: true), .saveAsQuicklink, "⌘S saves as quicklink")
 
         expect(resolve("x", control: true), .delete, "⌃X deletes the row")
         expect(resolve("x", shift: true, control: true), .deleteAll, "⌃⇧X deletes everything")
@@ -97,7 +99,8 @@ struct PaletteShortcutTests {
 
         let expanded: [PaletteShortcut] = [
             .copyFile, .copyName, .copyPath, .copyText, .pasteFile, .quickLook, .openInApp,
-            .showDetails, .toggleFavorite, .hideFromSearch, .quit, .forceQuit, .restart
+            .showDetails, .toggleInfoPanel, .showInfoInFinder, .saveAsQuicklink,
+            .toggleFavorite, .hideFromSearch, .quit, .forceQuit, .restart
         ]
         let anywhere: [PaletteShortcut] = [
             .commandDelete, .delete, .deleteAll, .pin, .favoriteSlot(0), .continueInChat, .newItem,
@@ -112,7 +115,8 @@ struct PaletteShortcutTests {
 
         let closing: [PaletteShortcut] = [
             .delete, .deleteAll, .copyFile, .copyName, .copyPath, .copyText, .copyCalculation,
-            .quickLook, .openInApp, .showDetails, .toggleFavorite, .hideFromSearch, .newItem, .settings
+            .quickLook, .openInApp, .showDetails, .toggleInfoPanel, .showInfoInFinder,
+            .saveAsQuicklink, .toggleFavorite, .hideFromSearch, .newItem, .settings
         ]
         let leaving: [PaletteShortcut] = [
             .commandDelete, .pasteFile, .quit, .forceQuit, .restart, .pin, .favoriteSlot(0),

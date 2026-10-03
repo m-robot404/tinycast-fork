@@ -110,7 +110,7 @@ enum ExecutableLocator {
             return (shell, ["-ilc", script, command])
         case "zsh", "bash", "sh", "ksh", "dash":
             let script = #"printf '\#(answerMarker)%s\n' "$(command -v -- "$1")""#
-            return (shell, ["-ilc", script, "tinycast-locator", command])
+            return (shell, ["+m", "-ilc", script, "tinycast-locator", command])
         default:
             return lookup(command, in: URL(fileURLWithPath: "/bin/zsh"))
         }

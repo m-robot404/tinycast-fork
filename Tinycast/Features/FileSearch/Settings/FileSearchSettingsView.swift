@@ -8,14 +8,18 @@ struct FileSearchSettingsView: View {
         return Form {
             Section {
                 Toggle(isOn: $settings.fileSearchEnabled) {
-                    SettingsFeatureToggleLabel(
-                        anchor: .fileSearchFileSearch, title: "Enable File Search",
-                        subtitle: "Uses the Spotlight index, only when you search.")
+                    SettingsRowTitle(.fileSearchFileSearch, "Enable File Search")
+                    Text("Find files and folders through the system Spotlight index, only on demand.")
                 }
+            } header: {
+                SettingsSectionHeader(.fileSearchFileSearch)
             }
-            .settingsAnchor(.fileSearchFileSearch)
 
             FeatureCommandsSection(owner: .fileSearch, anchor: .fileSearchCommands)
+                .settingsEnabled(settings.fileSearchEnabled)
+            FileSearchPreviewSection()
+                .settingsEnabled(settings.fileSearchEnabled)
+            FileSearchActionsSection()
                 .settingsEnabled(settings.fileSearchEnabled)
             FileSearchScopesSection()
                 .settingsEnabled(settings.fileSearchEnabled)
@@ -24,6 +28,102 @@ struct FileSearchSettingsView: View {
         }
         .formStyle(.grouped)
         .settingsScrollTarget(.fileSearch)
+    }
+}
+
+private struct FileSearchPreviewSection: View {
+    @Environment(AppSettings.self) private var settings
+
+    var body: some View {
+        @Bindable var settings = settings
+        Section {
+            Toggle(isOn: $settings.fileSearchShowsInfoPanel) {
+                SettingsRowTitle(.fileSearchPreview, "Show Preview Panel")
+                Text("Display file preview and metadata alongside search results.")
+            }
+            Toggle(isOn: $settings.fileSearchIncludeContent) {
+                SettingsRowTitle(.fileSearchPreview, "Search File Content & Metadata")
+                Text("Search inside text documents, document titles, image captions, and tags. When disabled, file search matches filenames only.")
+            }
+            Picker(selection: $settings.fileSearchResultLimit) {
+                ForEach(FileSearchResultLimit.allCases) { limit in
+                    Text(limit.title).tag(limit)
+                }
+            } label: {
+                SettingsRowTitle(.fileSearchPreview, "Maximum search results")
+                Text("Cap on the number of results returned per query.")
+            }
+            Picker(selection: $settings.fileSearchPreviewSize) {
+                ForEach(FileSearchPreviewSize.allCases) { size in
+                    Text(size.title).tag(size)
+                }
+            } label: {
+                SettingsRowTitle(.fileSearchPreview, "Preview image size")
+                Text("Maximum height for file and image thumbnails in the preview panel.")
+            }
+            Picker(selection: $settings.fileSearchResetTimeout) {
+                ForEach(FileSearchResetTimeout.allCases) { timeout in
+                    Text(timeout.title).tag(timeout)
+                }
+            } label: {
+                SettingsRowTitle(.fileSearchPreview, "Keep search history for")
+                Text("How long a closed file search preserves its query and results before resetting.")
+            }
+        } header: {
+            SettingsSectionHeader(.fileSearchPreview)
+        }
+    }
+}
+
+private struct FileSearchActionsSection: View {
+    @Environment(AppSettings.self) private var settings
+
+    private var isDefault: Bool {
+        settings.fileSearchDisabledActions.isEmpty
+    }
+
+    var body: some View {
+        @Bindable var settings = settings
+        Section {
+            ForEach(FileSearchActionOption.allCases) { action in
+                SettingsRow(title: action.title) {
+                    Image(systemName: action.systemImage)
+                        .frame(width: Theme.Size.settingsRowIcon)
+                        .foregroundStyle(.secondary)
+                } trailing: {
+                    if let shortcut = action.defaultShortcut {
+                        HStack(spacing: Theme.Spacing.xxs) {
+                            ForEach(Array(shortcut.enumerated()), id: \.offset) { _, glyph in
+                                KeyCapChip(text: String(glyph), style: .outline)
+                            }
+                        }
+                    }
+                    Toggle("", isOn: actionBinding(action))
+                        .labelsHidden()
+                        .toggleStyle(.checkbox)
+                        .accessibilityLabel("Include \(action.title) in ⌘K menu")
+                }
+            }
+
+            if !isDefault {
+                Button("Restore Default Actions") {
+                    settings.fileSearchDisabledActions = []
+                }
+            }
+        } header: {
+            SettingsSectionHeader(.fileSearchActions)
+        } footer: {
+            Text("Checked actions appear in the ⌘K action menu when a file or folder is selected.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private func actionBinding(_ action: FileSearchActionOption) -> Binding<Bool> {
+        Binding(
+            get: { settings.isFileSearchActionVisible(action) },
+            set: { settings.setFileSearchAction(action, visible: $0) }
+        )
     }
 }
 
@@ -39,11 +139,7 @@ private struct FileSearchScopesSection: View {
     var body: some View {
         Section {
             ForEach(settings.fileSearchScopes, id: \.self) { scope in
-                SettingsScopeRow(
-                    scope: scope,
-                    path: FileSearchScope.expand(scope, homeDirectory: home).path,
-                    isMissing: missing.contains(scope)
-                ) {
+                ScopeRow(scope: scope, isMissing: missing.contains(scope)) {
                     settings.fileSearchScopes.removeAll { $0 == scope }
                 }
             }
@@ -60,9 +156,14 @@ private struct FileSearchScopesSection: View {
         } header: {
             SettingsSectionHeader(.fileSearchSearchScopes)
         } footer: {
-            Text("Home covers its visible folders and cloud drives, never Library.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            Text(
+                """
+                Your home folder expands to its visible folders and cloud drives, never to its Library. \
+                An empty list searches nothing.
+                """
+            )
+            .font(.caption)
+            .foregroundStyle(.secondary)
         }
         .onAppear(perform: refreshMissing)
         .onChange(of: settings.fileSearchScopes) { _, _ in refreshMissing() }
@@ -91,6 +192,39 @@ private struct FileSearchScopesSection: View {
     }
 }
 
+private struct ScopeRow: View {
+    let scope: String
+    let isMissing: Bool
+    let onRemove: () -> Void
+
+    var body: some View {
+        LabeledContent {
+            HStack(spacing: Theme.Spacing.sm) {
+                if isMissing {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.orange)
+                        .help("This location no longer exists.")
+                }
+                Button(action: onRemove) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.tertiary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Remove \(scope)")
+            }
+        } label: {
+            Label {
+                Text(scope)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .foregroundStyle(isMissing ? AnyShapeStyle(.tertiary) : AnyShapeStyle(.primary))
+            } icon: {
+                Image(systemName: "folder")
+            }
+        }
+    }
+}
+
 private struct FileSearchIgnoreSection: View {
     @Environment(AppSettings.self) private var settings
     @State private var draft = ""
@@ -111,9 +245,15 @@ private struct FileSearchIgnoreSection: View {
         } header: {
             SettingsSectionHeader(.fileSearchIgnorePatterns)
         } footer: {
-            Text("No slash matches a name, like *.tmp. A slash matches the path, like **/[Cc]ache/**.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            Text(
+                """
+                A pattern without a slash matches any file or folder name, like *.tmp or node_modules; \
+                one with a slash matches the whole path, like **/[Cc]ache/**. The built-in patterns \
+                always apply.
+                """
+            )
+            .font(.caption)
+            .foregroundStyle(.secondary)
         }
     }
 

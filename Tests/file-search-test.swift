@@ -1,5 +1,4 @@
 import Foundation
-import UniformTypeIdentifiers
 
 @main
 struct FileSearchTests {
@@ -19,15 +18,12 @@ struct FileSearchTests {
 
     static func main() {
         queryGrammar()
-        recents()
-        typeFilter()
         scopePolicy()
         pathPolicy()
         ignoreRules()
         policyResolution()
         resultModel()
         ranking()
-        previewKind()
 
         print(failures == 0 ? "File search tests passed" : "\(failures) file search tests failed")
         exit(failures == 0 ? 0 : 1)
@@ -55,6 +51,17 @@ struct FileSearchTests {
                 == "kMDItemFSName == \"*report*\"cd && kMDItemFSName != \"*.tmp\"cd"
                 + " && kMDItemFSName != \"*.log\"cd",
             "ignored name globs keep their wildcards and join the expression as exclusions")
+        expect(
+            FileSearchQuery.filenameExpression(for: "report") == "kMDItemFSName == \"*report*\"cd",
+            "filename expression queries name substrings")
+        expect(
+            FileSearchQuery.contentExpression(for: "report")
+                == "(kMDItemTextContent == \"report*\"cd || kMDItemDescription == \"report*\"cd || kMDItemKeywords == \"report*\"cd || kMDItemTitle == \"report*\"cd || kMDItemHeadline == \"report*\"cd)",
+            "content expression uses word-prefix matching for Spotlight inverted index")
+        expect(
+            FileSearchQuery.expression(for: "report", includeContent: true)
+                == "(kMDItemFSName == \"*report*\"cd || kMDItemTextContent == \"report*\"cd || kMDItemDescription == \"report*\"cd || kMDItemKeywords == \"report*\"cd || kMDItemTitle == \"report*\"cd || kMDItemHeadline == \"report*\"cd)",
+            "deep search queries text content, image captions, and metadata attributes")
         expect(FileSearchQuery.candidateLimit == 1_000, "the Spotlight candidate cap is fixed")
         expect(FileSearchQuery.resultLimit == 200, "the displayed result cap is fixed")
         expect(
@@ -65,76 +72,14 @@ struct FileSearchTests {
             "every term is required for a home-root match")
     }
 
-    static func recents() {
-        expect(
-            FileSearchQuery.recentExpression(stamp: .changed, excluding: ["*.tmp"], filter: .images)
-                == "kMDItemFSContentChangeDate > $time.now(-259200)"
-                + " && kMDItemContentTypeTree == \"public.image\""
-                + " && kMDItemFSName != \"*.tmp\"cd",
-            "a recents query is one stamp, narrowed by the filter and the ignore list")
-        expect(
-            FileSearchQuery.recentExpression(stamp: .used)
-                == "kMDItemLastUsedDate > $time.now(-2592000)",
-            "an unfiltered recents query is the one date clause alone")
-        expect(
-            FileSearchQuery.RecentStamp.allCases.map(\.rawValue)
-                == ["kMDItemFSContentChangeDate", "kMDItemLastUsedDate"],
-            "both stamps are asked about: macOS records a last-used date for very few opens")
-        expect(
-            FileSearchQuery.RecentStamp.changed.window != FileSearchQuery.RecentStamp.used.window,
-            "editing is constant, so the changed window is not the used one")
-        expect(FileSearchQuery.recentLimit == 20, "the blank screen's row count is fixed")
-    }
-
-    static func typeFilter() {
-        expect(
-            FileSearchQuery.expression(for: "report", filter: .all)
-                == FileSearchQuery.expression(for: "report"),
-            "an unfiltered search asks Spotlight exactly what it always has")
-        expect(
-            FileSearchQuery.expression(for: "report", filter: .images)
-                == "kMDItemFSName == \"*report*\"cd && kMDItemContentTypeTree == \"public.image\"",
-            "a single-type filter joins the expression as one clause")
-        expect(
-            FileSearchQuery.expression(for: "report", excluding: ["*.tmp"], filter: .folders)
-                == "kMDItemFSName == \"*report*\"cd && kMDItemContentTypeTree == \"public.folder\""
-                + " && kMDItemFSName != \"*.tmp\"cd",
-            "the type clause sits between the name terms and the ignored names")
-        expect(
-            FileSearchFilter.documents.spotlightClause?.hasPrefix("(") == true,
-            "a filter naming several types parenthesizes them, so the OR cannot leak")
-        expect(FileSearchFilter.all.spotlightClause == nil, "All Types constrains nothing")
-
-        expect(
-            FileSearchFilter.all.accepts(contentType: nil, isDirectory: false),
-            "All Types admits a file whose type never resolved")
-        expect(
-            FileSearchFilter.folders.accepts(contentType: .folder, isDirectory: true)
-                && FileSearchFilter.folders.accepts(contentType: nil, isDirectory: true),
-            "Folders admits a directory whether or not its type resolved")
-        expect(
-            !FileSearchFilter.folders.accepts(contentType: .png, isDirectory: false),
-            "Folders rejects a file")
-        expect(
-            FileSearchFilter.images.accepts(contentType: .png, isDirectory: false)
-                && !FileSearchFilter.images.accepts(contentType: .mp3, isDirectory: false),
-            "a type filter admits what conforms to it and nothing else")
-        expect(
-            FileSearchFilter.documents.accepts(contentType: .swiftSource, isDirectory: false),
-            "source files conform to public.text, so Documents keeps them")
-        expect(
-            !FileSearchFilter.images.accepts(contentType: nil, isDirectory: false),
-            "an unresolved type is a folder or nothing, never a guessed image")
-    }
-
     static func scopePolicy() {
         func candidate(
             _ name: String, directory: Bool, hidden: Bool = false, package: Bool = false,
-            type: UTType? = nil
+            application: Bool = false
         ) -> FileSearchScope.Candidate {
             FileSearchScope.Candidate(
                 url: home.appending(path: name), isDirectory: directory, isHidden: hidden,
-                isPackage: package, contentType: type)
+                isPackage: package, isApplication: application)
         }
         let selection = FileSearchScope.select([
             candidate("Documents", directory: true),
@@ -142,7 +87,7 @@ struct FileSearchTests {
             candidate("Library", directory: true),
             candidate(".cache", directory: true, hidden: true),
             candidate("Project.xcodeproj", directory: true, package: true),
-            candidate("Local.app", directory: true, package: true, type: .application),
+            candidate("Local.app", directory: true, package: true, application: true),
             candidate("Notes.txt", directory: false)
         ])
         expect(
@@ -253,6 +198,13 @@ struct FileSearchTests {
         expect(
             FileSearchScope.expand("~", homeDirectory: home).path == "/Users/test",
             "a bare tilde expands to home itself")
+
+        let deepPolicy = FileSearchPolicy(
+            scopes: ["~"], ignorePatterns: [], homeDirectory: home, includeContent: true,
+            resultLimit: 500)
+        expect(deepPolicy.includeContent, "deep search policy flag is preserved")
+        expect(deepPolicy.resultLimit == 500, "custom result limit is preserved")
+        expect(deepPolicy.candidateLimit == 2_500, "candidate limit scales with result limit")
     }
 
     static func resultModel() {
@@ -261,9 +213,6 @@ struct FileSearchTests {
         expect(nested.name == "Annual Report.pdf", "the full filename keeps its extension")
         expect(nested.parentPath == "~/Documents", "the parent path abbreviates home")
         expect(result("Notes.txt").parentPath == "~", "a home-root item has a bare tilde parent")
-        expect(
-            nested.parentName == "Documents" && result("Notes.txt").parentName == "test",
-            "the parent's own name is what a folder row prefixes itself with")
     }
 
     static func ranking() {
@@ -295,40 +244,25 @@ struct FileSearchTests {
             FileSearchQuery.rank(capped, for: "report", ignoring: shipped).count == 200,
             "ranking publishes no more than the display cap")
 
+        let customCapped = (0..<120).map { result("Archive/Report \($0).txt") }
+        expect(
+            FileSearchQuery.rank(customCapped, for: "report", ignoring: shipped, limit: 100).count
+                == 100,
+            "ranking respects custom limit")
+
+        let filenameMatch = result("Archive/spider-man.png")
+        let metadataMatch = result("Archive/604.png")
+        let rankedContent = FileSearchQuery.rank(
+            [metadataMatch, filenameMatch], for: "spider-man", ignoring: shipped)
+        expect(
+            rankedContent.map(\.name) == ["spider-man.png", "604.png"],
+            "filename matches rank ahead of content/metadata matches")
+
         expect(
             FileSearchQuery.rank(
                 [result("Archive/report.txt")], for: "report",
                 ignoring: FileSearchIgnoreList(patterns: ["Archive"])
             ).isEmpty,
             "ranking drops what the user's own patterns exclude")
-    }
-
-    static func previewKind() {
-        expect(FileSearchPreviewKind(pathExtension: "swift") == .quickLook, "declared text")
-        expect(FileSearchPreviewKind(pathExtension: "pdf") == .pdf, "a PDF draws in process")
-        expect(FileSearchPreviewKind(pathExtension: "mov") == .media, "a movie plays")
-        expect(FileSearchPreviewKind(pathExtension: "jsx") == nil, "undeclared waits on bytes")
-        expect(FileSearchPreviewKind(pathExtension: "ts") == nil, ".ts: TypeScript or MPEG-TS")
-
-        let source = Data("export const x = () => <div>é</div>\n".utf8)
-        expect(
-            FileSearchPreviewKind(pathExtension: "ts", head: source, isWholeFile: true) == .text,
-            "TypeScript source is text")
-        expect(
-            FileSearchPreviewKind(
-                pathExtension: "ts", head: Data([0x47, 0x40, 0x00, 0x10]), isWholeFile: false)
-                == .media,
-            "an MPEG-TS stream still plays")
-        expect(
-            FileSearchPreviewKind(pathExtension: "jsx", head: Data([0xFF, 0x00]), isWholeFile: true)
-                == .quickLook,
-            "undeclared binary falls back to QuickLook")
-
-        let cut = Data("café".utf8).dropLast()
-        expect(FileSearchPreviewKind.isText(cut, isWholeFile: false), "a read may cut a character")
-        expect(!FileSearchPreviewKind.isText(cut, isWholeFile: true), "a whole file must be UTF-8")
-        expect(
-            !FileSearchPreviewKind.isText(Data("abc".utf8) + [0xFF], isWholeFile: false),
-            "a read forgives a cut character, not a malformed byte")
     }
 }

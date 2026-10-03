@@ -26,6 +26,12 @@ enum PaletteShortcut: Equatable {
     case openInApp
     /// ⌘I.
     case showDetails
+    /// ⌘I on file search.
+    case toggleInfoPanel
+    /// ⌥⌘I.
+    case showInfoInFinder
+    /// ⌘S.
+    case saveAsQuicklink
     /// ⇧⌘F.
     case toggleFavorite
     /// ⇧⌘H.
@@ -62,7 +68,8 @@ enum PaletteShortcut: Equatable {
         if command, shift, matches("t") { return .copyText }
         if command, matches("y") { return .quickLook }
         if command, !shift, matches("o") { return .openInApp }
-        if command, !shift, matches("i") { return .showDetails }
+        if command, !shift, matches("i") { return option ? .showInfoInFinder : .showDetails }
+        if command, matches("s") { return .saveAsQuicklink }
         if control, matches("x") { return shift ? .deleteAll : .delete }
         if command, shift, matches("f") { return .toggleFavorite }
         if command, shift, matches("h") { return .hideFromSearch }
@@ -78,7 +85,8 @@ enum PaletteShortcut: Equatable {
     var requiresExpanded: Bool {
         switch self {
         case .copyFile, .copyName, .copyPath, .copyText, .pasteFile, .quickLook, .openInApp,
-            .showDetails, .toggleFavorite, .hideFromSearch, .quit, .forceQuit, .restart:
+            .showDetails, .toggleInfoPanel, .showInfoInFinder, .saveAsQuicklink,
+            .toggleFavorite, .hideFromSearch, .quit, .forceQuit, .restart:
             true
         case .commandDelete, .delete, .deleteAll, .pin, .favoriteSlot, .continueInChat, .newItem,
             .settings, .copyCalculation:
@@ -89,7 +97,8 @@ enum PaletteShortcut: Equatable {
     var closesMenu: Bool {
         switch self {
         case .delete, .deleteAll, .copyFile, .copyName, .copyPath, .copyText, .copyCalculation,
-            .quickLook, .openInApp, .showDetails, .toggleFavorite, .hideFromSearch, .newItem, .settings:
+            .quickLook, .openInApp, .showDetails, .toggleInfoPanel, .showInfoInFinder,
+            .saveAsQuicklink, .toggleFavorite, .hideFromSearch, .newItem, .settings:
             true
         case .commandDelete, .pasteFile, .quit, .forceQuit, .restart, .pin, .favoriteSlot,
             .continueInChat:

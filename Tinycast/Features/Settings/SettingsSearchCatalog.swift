@@ -134,6 +134,9 @@ enum SettingsSearchCatalog {
             .generalGeneral, "Auto-switch input source",
             keywords: ["keyboard", "layout", "language", "abc"]),
         .init(
+            .generalGeneral, "Default Currency",
+            keywords: ["currency", "money", "forex", "exchange", "usd", "inr", "eur"]),
+        .init(
             .generalAppearance, "Theme",
             keywords: ["dark", "light", "mode", "appearance"]),
         .init(
@@ -336,6 +339,24 @@ enum SettingsSearchCatalog {
         .init(
             group: .fileSearchCommands, "File search commands",
             keywords: ["shortcut", "launcher"]),
+        .init(
+            .fileSearchPreview, "Show Preview Panel",
+            keywords: ["preview", "metadata", "panel", "sidebar", "toggle"]),
+        .init(
+            .fileSearchPreview, "Search File Content & Metadata",
+            keywords: ["content", "text", "body", "metadata", "caption", "tags", "exif", "iptc"]),
+        .init(
+            .fileSearchPreview, "Maximum search results",
+            keywords: ["limit", "cap", "results", "count", "max"]),
+        .init(
+            .fileSearchPreview, "Preview image size",
+            keywords: ["thumbnail", "height", "scale", "image", "preview"]),
+        .init(
+            .fileSearchPreview, "Keep search history for",
+            keywords: ["retention", "timeout", "reset", "query", "persist"]),
+        .init(
+            group: .fileSearchActions, "Actions (⌘K)",
+            keywords: ["actions", "menu", "context menu", "copy", "finder", "quick look"]),
         .init(
             group: .fileSearchSearchScopes, "Search Scopes",
             keywords: ["folders", "locations", "home", "add folder"]),

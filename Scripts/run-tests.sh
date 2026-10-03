@@ -119,6 +119,8 @@ run slow -O fuzz-test      $L/SearchRelevance.swift $L/ScriptRomanization.swift 
                            $L/LauncherRankingStore.swift $L/LauncherSuggestions.swift
 run file-search-test       $L/SearchRelevance.swift \
                            Tinycast/Features/FileSearch/Model/*.swift
+run file-search-preview-test $L/SearchRelevance.swift \
+                             Tinycast/Features/FileSearch/Model/*.swift
 run file-search-session-test Tinycast/Platform/Signposts.swift \
                              $L/SearchRelevance.swift \
                              Tinycast/Features/FileSearch/Model/*.swift \
@@ -221,7 +223,6 @@ run hover-arming-test      Tinycast/Palette/HoverArming.swift \
                            Tinycast/Features/Clipboard/Model/ClipboardStore.swift \
                            Tinycast/Features/Clipboard/Model/ClipboardFilter.swift \
                            Tinycast/Features/Clipboard/Model/ClipboardFileKind.swift \
-                           Tinycast/Features/FileSearch/Model/FileSearchFilter.swift \
                            Tinycast/Features/Clipboard/Model/ColorValue.swift \
                            Tinycast/Features/Clipboard/Model/ColorFormat.swift \
                            Tinycast/Features/Clipboard/Model/ColorSpaces.swift \
@@ -242,7 +243,6 @@ run palette-navigation-test Tinycast/Palette/PaletteState.swift \
                            Tinycast/Features/Clipboard/Model/ClipboardStore.swift \
                            Tinycast/Features/Clipboard/Model/ClipboardFilter.swift \
                            Tinycast/Features/Clipboard/Model/ClipboardFileKind.swift \
-                           Tinycast/Features/FileSearch/Model/FileSearchFilter.swift \
                            Tinycast/Features/Clipboard/Model/ColorValue.swift \
                            Tinycast/Features/Clipboard/Model/ColorFormat.swift \
                            Tinycast/Features/Clipboard/Model/ColorSpaces.swift \

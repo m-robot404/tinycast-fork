@@ -3,50 +3,58 @@ import Foundation
 enum FileSearchQuery {
     static let candidateLimit = 1_000
     static let resultLimit = 200
-    /// A blank screen is a shortlist, not a browser: enough rows to reach, never to scroll far.
-    static let recentLimit = 20
 
     static func terms(in query: String) -> [String] {
         query.split(whereSeparator: \Character.isWhitespace).map(String.init)
     }
 
-    static func expression(
-        for query: String, excluding exclusions: [String] = [], filter: FileSearchFilter = .all
+    static func filenameExpression(
+        for query: String, excluding exclusions: [String] = []
     ) -> String? {
         let terms = terms(in: query)
         guard !terms.isEmpty else { return nil }
-        let matches = terms.map { "kMDItemFSName == \"*\(escape($0))*\"cd" }
-        // Excluding in the predicate keeps ignored files from consuming the candidate cap.
+        let matches = terms.map { term -> String in
+            let escaped = escape(term)
+            return "kMDItemFSName == \"*\(escaped)*\"cd"
+        }
         let excludes = exclusions.map { "kMDItemFSName != \"\(escapeGlob($0))\"cd" }
-        let types = filter.spotlightClause.map { [$0] } ?? []
-        return (matches + types + excludes).joined(separator: " && ")
+        return (matches + excludes).joined(separator: " && ")
     }
 
-    /// Both, because macOS stamps `kMDItemLastUsedDate` on few opens now, and Spotlight sorts on one.
-    enum RecentStamp: String, CaseIterable, Sendable {
-        case changed = "kMDItemFSContentChangeDate"
-        case used = "kMDItemLastUsedDate"
+    static func contentExpression(
+        for query: String, excluding exclusions: [String] = []
+    ) -> String? {
+        let terms = terms(in: query)
+        guard !terms.isEmpty else { return nil }
+        let matches = terms.map { term -> String in
+            let escaped = escape(term)
+            return "(kMDItemTextContent == \"\(escaped)*\"cd || kMDItemDescription == \"\(escaped)*\"cd || kMDItemKeywords == \"\(escaped)*\"cd || kMDItemTitle == \"\(escaped)*\"cd || kMDItemHeadline == \"\(escaped)*\"cd)"
+        }
+        let excludes = exclusions.map { "kMDItemFSName != \"\(escapeGlob($0))\"cd" }
+        return (matches + excludes).joined(separator: " && ")
+    }
 
-        /// Spotlight's own literal, so no clock is injected; editing is constant, so it is shorter.
-        var window: String {
-            switch self {
-            case .changed: return "$time.now(-259200)"
-            case .used: return "$time.now(-2592000)"
+    static func expression(
+        for query: String, excluding exclusions: [String] = [], includeContent: Bool = false
+    ) -> String? {
+        let terms = terms(in: query)
+        guard !terms.isEmpty else { return nil }
+        let matches = terms.map { term -> String in
+            let escaped = escape(term)
+            if includeContent {
+                return "(kMDItemFSName == \"*\(escaped)*\"cd || kMDItemTextContent == \"\(escaped)*\"cd || kMDItemDescription == \"\(escaped)*\"cd || kMDItemKeywords == \"\(escaped)*\"cd || kMDItemTitle == \"\(escaped)*\"cd || kMDItemHeadline == \"\(escaped)*\"cd)"
+            } else {
+                return "kMDItemFSName == \"*\(escaped)*\"cd"
             }
         }
-    }
-
-    static func recentExpression(
-        stamp: RecentStamp, excluding exclusions: [String] = [], filter: FileSearchFilter = .all
-    ) -> String {
-        let touched = "\(stamp.rawValue) > \(stamp.window)"
-        let types = filter.spotlightClause.map { [$0] } ?? []
+        // Excluding in the predicate keeps ignored files from consuming the candidate cap.
         let excludes = exclusions.map { "kMDItemFSName != \"\(escapeGlob($0))\"cd" }
-        return ([touched] + types + excludes).joined(separator: " && ")
+        return (matches + excludes).joined(separator: " && ")
     }
 
     static func rank(
-        _ results: [FileSearchResult], for query: String, ignoring ignore: FileSearchIgnoreList
+        _ results: [FileSearchResult], for query: String, ignoring ignore: FileSearchIgnoreList,
+        limit: Int = 200
     ) -> [FileSearchResult] {
         let terms = terms(in: query)
         guard !terms.isEmpty else { return [] }
@@ -74,7 +82,7 @@ enum FileSearchQuery {
                 return left.0.id.localizedCaseInsensitiveCompare(right.0.id) == .orderedAscending
             }
         }
-        .prefix(resultLimit)
+        .prefix(limit)
         .map(\.0)
     }
 
