@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+	A55555555555555555555555 /* RaycastThemeRows.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A0B5E7A5D2A1B3C4D5E6F7 /* RaycastThemeRows.swift */; };
 		0047FE6A50E746CCF0FC6810 /* SystemActionRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AEDBB526AB2C0406D8226D5 /* SystemActionRunner.swift */; };
 		005B39EF22378D1736CE5805 /* TerminalLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2EAA357A9F0317320CFAADF /* TerminalLogView.swift */; };
 		00BA80B95E15859F0FDA6F16 /* AppVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D4F22647E4E1BA19F0FC520 /* AppVersion.swift */; };
@@ -794,6 +795,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+	C0A0B5E7A5D2A1B3C4D5E6F7 /* RaycastThemeRows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaycastThemeRows.swift; sourceTree = "<group>"; };
 		00B475B5929CC0478EFAC7D8 /* UpdateFailure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateFailure.swift; sourceTree = "<group>"; };
 		00CF6A57ECFDA17248393EA8 /* RaycastScriptImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaycastScriptImport.swift; sourceTree = "<group>"; };
 		00ECBD55353C83A7F4E93592 /* MCPSettingsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPSettingsSection.swift; sourceTree = "<group>"; };
