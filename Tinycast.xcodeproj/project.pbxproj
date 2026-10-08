@@ -2579,6 +2579,7 @@
 				418DA899A1546F3B4AC44777 /* GeneralSettingsView.swift */,
 				29D547CAB18AFCFC0390C943 /* NavigationSettingsView.swift */,
 				B3C7D17F97002FD58E8A5F53 /* PermissionsSettingsView.swift */,
+				C0A0B5E7A5D2A1B3C4D5E6F7 /* RaycastThemeRows.swift */,
 			);
 			path = Panes;
 			sourceTree = "<group>";
@@ -3561,6 +3562,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A740982B6C5E7C240F1810CC /* RaycastThemeCatalog.swift in Sources */,
+				B568E94ED648225B9013D8FBA /* RaycastThemeCommand.swift in Sources */,
+				ACC2485EAD5B14CFF8B04DEF /* RaycastThemeCore.swift in Sources */,
+				0ABCB5A359D098AD979921B2 /* RaycastThemeSwitching.swift in Sources */,
+				C0A0B5E7A5D2A1B3C4D5E6F7 /* RaycastThemeRows.swift in Sources */,
 				56EB00CB2815CC268829C97B /* AIAttachmentPolicy.swift in Sources */,
 				7F22BD030E1D2A5DC43BABE9 /* AIBrand.swift in Sources */,
 				128AE908878AA0F96C928C9D /* AIChatCoordinator.swift in Sources */,
