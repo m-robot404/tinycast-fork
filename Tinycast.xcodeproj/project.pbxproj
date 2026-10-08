@@ -763,10 +763,10 @@
 		FF372D9F3A0FE3671D517589 /* WindowCommandCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE33C0D70D728B12E9A8D4A6 /* WindowCommandCoordinator.swift */; };
 		FF42AF572BA0BFEFCFCE5901 /* WindowLayoutGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF7FC0E52E9082006614E0D /* WindowLayoutGeometry.swift */; };
 		FF934DD9FBD8F26BAB72ACD1 /* SymbolImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64EC07E163CE4F3D11FE7225 /* SymbolImage.swift */; };
-		A740982B6C5E7C240F1810CC /* RaycastThemeCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A740982B6C5E7C240F1810CC /* RaycastThemeCatalog.swift */; };
-		B568E94ED648225B9013D8FBA /* RaycastThemeCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = B568E94ED648225B9013D8FBA /* RaycastThemeCommand.swift */; };
-		ACC2485EAD5B14CFF8B04DEF /* RaycastThemeCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACC2485EAD5B14CFF8B04DEF /* RaycastThemeCore.swift */; };
-		0ABCB5A359D098AD979921B2 /* RaycastThemeSwitching.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABCB5A359D098AD979921B2 /* RaycastThemeSwitching.swift */; };
+		A11111111111111111111111 /* RaycastThemeCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = B11111111111111111111111 /* RaycastThemeCatalog.swift */; };
+		A22222222222222222222222 /* RaycastThemeCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = B22222222222222222222222 /* RaycastThemeCommand.swift */; };
+		A33333333333333333333333 /* RaycastThemeCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33333333333333333333333 /* RaycastThemeCore.swift */; };
+		A44444444444444444444444 /* RaycastThemeSwitching.swift in Sources */ = {isa = PBXBuildFile; fileRef = B44444444444444444444444 /* RaycastThemeSwitching.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1553,10 +1553,10 @@
 		FE41DC04958D7C2FF8C47F62 /* CustomCommandCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCommandCoordinator.swift; sourceTree = "<group>"; };
 		FE72CE02F853ACE956627347 /* SystemAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemAction.swift; sourceTree = "<group>"; };
 		FF447647B325A119F2B3BCD1 /* UnitCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnitCategory.swift; sourceTree = "<group>"; };
-		A740982B6C5E7C240F1810CC /* RaycastThemeCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaycastThemeCatalog.swift; sourceTree = "<group>"; };
-		B568E94ED648225B9013D8FBA /* RaycastThemeCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaycastThemeCommand.swift; sourceTree = "<group>"; };
-		ACC2485EAD5B14CFF8B04DEF /* RaycastThemeCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaycastThemeCore.swift; sourceTree = "<group>"; };
-		0ABCB5A359D098AD979921B2 /* RaycastThemeSwitching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaycastThemeSwitching.swift; sourceTree = "<group>"; };
+		B11111111111111111111111 /* RaycastThemeCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaycastThemeCatalog.swift; sourceTree = "<group>"; };
+		B22222222222222222222222 /* RaycastThemeCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaycastThemeCommand.swift; sourceTree = "<group>"; };
+		B33333333333333333333333 /* RaycastThemeCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaycastThemeCore.swift; sourceTree = "<group>"; };
+		B44444444444444444444444 /* RaycastThemeSwitching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaycastThemeSwitching.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -3570,10 +3570,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A740982B6C5E7C240F1810CC /* RaycastThemeCatalog.swift in Sources */,
-				B568E94ED648225B9013D8FBA /* RaycastThemeCommand.swift in Sources */,
-				ACC2485EAD5B14CFF8B04DEF /* RaycastThemeCore.swift in Sources */,
-				0ABCB5A359D098AD979921B2 /* RaycastThemeSwitching.swift in Sources */,
+				A11111111111111111111111 /* RaycastThemeCatalog.swift in Sources */,
+				A22222222222222222222222 /* RaycastThemeCommand.swift in Sources */,
+				A33333333333333333333333 /* RaycastThemeCore.swift in Sources */,
+				A44444444444444444444444 /* RaycastThemeSwitching.swift in Sources */,
 				C0A0B5E7A5D2A1B3C4D5E6F7 /* RaycastThemeRows.swift in Sources */,
 				56EB00CB2815CC268829C97B /* AIAttachmentPolicy.swift in Sources */,
 				7F22BD030E1D2A5DC43BABE9 /* AIBrand.swift in Sources */,
