@@ -199,6 +199,7 @@ struct RootPaletteView: View {
                     title: "Changelog",
                     systemImage: "clock.arrow.trianglehead.2.counterclockwise.rotate.90"
                 ) {
+                    if let url = URL(string: "https://github.com/sermelipharo/tinycast-space/releases") {
                     if let url = URL(string: "https://github.com/subhashhhhhh/tinycast-fork/releases") {
                         openURL(url)
                     }
@@ -322,7 +323,7 @@ struct RootPaletteView: View {
                 )
                 // The window's frame is the size source, so the glass and clip stay matched.
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                .background(Theme.Colors.panelScrim)
+                .background(SpaceTheme.backdrop)  // tinycast-space: a Raycast theme's gradient
                 .background(GlassEffectView())
                 .overlay {
                     Theme.Colors.dialogDimming
@@ -394,6 +395,8 @@ struct RootPaletteView: View {
                 extensions.dispatch(handler: handler, arguments: [vm.query])
             }
             .modifier(ExtensionSelectionForwarder(screen: extensionScreen, selection: vm.selection))
+            // tinycast-space: a highlighted row offering a raycast://theme link previews it.
+            .modifier(RaycastThemeLinkPreview(screen: extensionScreen, selection: vm.selection))
             // A narrower list means the old index points at a different row, or at none.
             .onChange(of: vm.clipboardFilter) { land() }
             .onChange(of: vm.fileSearchFilter) {
