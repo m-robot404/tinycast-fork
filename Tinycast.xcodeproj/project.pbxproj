@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+	A55555555555555555555555 /* RaycastThemeRows.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A0B5E7A5D2A1B3C4D5E6F7 /* RaycastThemeRows.swift */; };
 		0047FE6A50E746CCF0FC6810 /* SystemActionRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AEDBB526AB2C0406D8226D5 /* SystemActionRunner.swift */; };
 		005B39EF22378D1736CE5805 /* TerminalLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2EAA357A9F0317320CFAADF /* TerminalLogView.swift */; };
 		00BA80B95E15859F0FDA6F16 /* AppVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D4F22647E4E1BA19F0FC520 /* AppVersion.swift */; };
@@ -763,6 +764,10 @@
 		FF372D9F3A0FE3671D517589 /* WindowCommandCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE33C0D70D728B12E9A8D4A6 /* WindowCommandCoordinator.swift */; };
 		FF42AF572BA0BFEFCFCE5901 /* WindowLayoutGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF7FC0E52E9082006614E0D /* WindowLayoutGeometry.swift */; };
 		FF934DD9FBD8F26BAB72ACD1 /* SymbolImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64EC07E163CE4F3D11FE7225 /* SymbolImage.swift */; };
+		A11111111111111111111111 /* RaycastThemeCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = B11111111111111111111111 /* RaycastThemeCatalog.swift */; };
+		A22222222222222222222222 /* RaycastThemeCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = B22222222222222222222222 /* RaycastThemeCommand.swift */; };
+		A33333333333333333333333 /* RaycastThemeCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33333333333333333333333 /* RaycastThemeCore.swift */; };
+		A44444444444444444444444 /* RaycastThemeSwitching.swift in Sources */ = {isa = PBXBuildFile; fileRef = B44444444444444444444444 /* RaycastThemeSwitching.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -790,6 +795,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+	C0A0B5E7A5D2A1B3C4D5E6F7 /* RaycastThemeRows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaycastThemeRows.swift; sourceTree = "<group>"; };
 		00B475B5929CC0478EFAC7D8 /* UpdateFailure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateFailure.swift; sourceTree = "<group>"; };
 		00CF6A57ECFDA17248393EA8 /* RaycastScriptImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaycastScriptImport.swift; sourceTree = "<group>"; };
 		00ECBD55353C83A7F4E93592 /* MCPSettingsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPSettingsSection.swift; sourceTree = "<group>"; };
@@ -1549,6 +1555,10 @@
 		FE41DC04958D7C2FF8C47F62 /* CustomCommandCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCommandCoordinator.swift; sourceTree = "<group>"; };
 		FE72CE02F853ACE956627347 /* SystemAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemAction.swift; sourceTree = "<group>"; };
 		FF447647B325A119F2B3BCD1 /* UnitCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnitCategory.swift; sourceTree = "<group>"; };
+		B11111111111111111111111 /* RaycastThemeCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaycastThemeCatalog.swift; sourceTree = "<group>"; };
+		B22222222222222222222222 /* RaycastThemeCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaycastThemeCommand.swift; sourceTree = "<group>"; };
+		B33333333333333333333333 /* RaycastThemeCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaycastThemeCore.swift; sourceTree = "<group>"; };
+		B44444444444444444444444 /* RaycastThemeSwitching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaycastThemeSwitching.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -2579,6 +2589,7 @@
 				418DA899A1546F3B4AC44777 /* GeneralSettingsView.swift */,
 				29D547CAB18AFCFC0390C943 /* NavigationSettingsView.swift */,
 				B3C7D17F97002FD58E8A5F53 /* PermissionsSettingsView.swift */,
+				C0A0B5E7A5D2A1B3C4D5E6F7 /* RaycastThemeRows.swift */,
 			);
 			path = Panes;
 			sourceTree = "<group>";
@@ -3225,6 +3236,10 @@
 		E3202F504002B7792FC50B2F /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				B11111111111111111111111 /* RaycastThemeCatalog.swift */,
+				B22222222222222222222222 /* RaycastThemeCommand.swift */,
+				B33333333333333333333333 /* RaycastThemeCore.swift */,
+				B44444444444444444444444 /* RaycastThemeSwitching.swift */,
 				EF06DE31F69C21983F9883DF /* Model */,
 				87EA838A362AAB1D1B5665E0 /* Panes */,
 				86BBB89C3469D1C1135C3C09 /* Service */,
@@ -3561,6 +3576,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A11111111111111111111111 /* RaycastThemeCatalog.swift in Sources */,
+				A22222222222222222222222 /* RaycastThemeCommand.swift in Sources */,
+				A33333333333333333333333 /* RaycastThemeCore.swift in Sources */,
+				A44444444444444444444444 /* RaycastThemeSwitching.swift in Sources */,
+				A55555555555555555555555 /* RaycastThemeRows.swift in Sources */,
 				56EB00CB2815CC268829C97B /* AIAttachmentPolicy.swift in Sources */,
 				7F22BD030E1D2A5DC43BABE9 /* AIBrand.swift in Sources */,
 				128AE908878AA0F96C928C9D /* AIChatCoordinator.swift in Sources */,
