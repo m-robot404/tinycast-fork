@@ -3580,7 +3580,7 @@
 				A22222222222222222222222 /* RaycastThemeCommand.swift in Sources */,
 				A33333333333333333333333 /* RaycastThemeCore.swift in Sources */,
 				A44444444444444444444444 /* RaycastThemeSwitching.swift in Sources */,
-				C0A0B5E7A5D2A1B3C4D5E6F7 /* RaycastThemeRows.swift in Sources */,
+				A55555555555555555555555 /* RaycastThemeRows.swift in Sources */,
 				56EB00CB2815CC268829C97B /* AIAttachmentPolicy.swift in Sources */,
 				7F22BD030E1D2A5DC43BABE9 /* AIBrand.swift in Sources */,
 				128AE908878AA0F96C928C9D /* AIChatCoordinator.swift in Sources */,
