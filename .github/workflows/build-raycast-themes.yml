@@ -24,6 +24,11 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             build
 
+      - name: Ad-hoc sign
+        run: |
+          codesign --deep --force --verbose --sign - "build/Build/Products/Release/Tinycast.app"
+          codesign --verify --deep --strict --verbose=2 "build/Build/Products/Release/Tinycast.app"
+
       - name: Package
         run: |
           ditto -c -k --sequesterRsrc --keepParent "build/Build/Products/Release/Tinycast.app" "Tinycast-Raycast-Themes.zip"
