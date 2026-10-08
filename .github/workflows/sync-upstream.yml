@@ -9,17 +9,17 @@ permissions:
   contents: write
 
 concurrency:
-  group: sync-upstream-integration
+  group: sync-upstream-raycast-themes
   cancel-in-progress: false
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout integration branch
+      - name: Checkout Raycast Themes branch
         uses: actions/checkout@v4
         with:
-          ref: integrate/upstream-main
+          ref: integrate/raycast-themes
           fetch-depth: 0
           persist-credentials: true
 
@@ -42,12 +42,12 @@ jobs:
             echo "needs_sync=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Merge upstream into integrate/upstream-main
+      - name: Merge upstream into integrate/raycast-themes
         if: steps.check.outputs.needs_sync == 'true'
         run: |
           git merge --no-edit upstream/main
 
-      - name: Push synced integration branch
+      - name: Push synced Raycast Themes branch
         if: steps.check.outputs.needs_sync == 'true'
         run: |
-          git push origin HEAD:integrate/upstream-main
+          git push origin HEAD:integrate/raycast-themes
