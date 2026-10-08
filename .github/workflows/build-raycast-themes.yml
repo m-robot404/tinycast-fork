@@ -1,0 +1,36 @@
+name: Build Tinycast
+
+on:
+  push:
+    branches:
+      - integrate/raycast-themes
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-26
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          xcodebuild \
+            -project Tinycast.xcodeproj \
+            -scheme Tinycast \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build
+
+      - name: Package
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent "build/Build/Products/Release/Tinycast.app" "Tinycast-Raycast-Themes.zip"
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tinycast-Raycast-Themes
+          path: Tinycast-Raycast-Themes.zip
+          if-no-files-found: error
