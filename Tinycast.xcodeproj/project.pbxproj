@@ -3234,6 +3234,10 @@
 		E3202F504002B7792FC50B2F /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				B11111111111111111111111 /* RaycastThemeCatalog.swift */,
+				B22222222222222222222222 /* RaycastThemeCommand.swift */,
+				B33333333333333333333333 /* RaycastThemeCore.swift */,
+				B44444444444444444444444 /* RaycastThemeSwitching.swift */,
 				EF06DE31F69C21983F9883DF /* Model */,
 				87EA838A362AAB1D1B5665E0 /* Panes */,
 				86BBB89C3469D1C1135C3C09 /* Service */,
