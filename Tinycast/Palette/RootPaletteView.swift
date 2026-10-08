@@ -199,7 +199,6 @@ struct RootPaletteView: View {
                     title: "Changelog",
                     systemImage: "clock.arrow.trianglehead.2.counterclockwise.rotate.90"
                 ) {
-                    if let url = URL(string: "https://github.com/sermelipharo/tinycast-space/releases") {
                     if let url = URL(string: "https://github.com/subhashhhhhh/tinycast-fork/releases") {
                         openURL(url)
                     }
